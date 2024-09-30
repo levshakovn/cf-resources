@@ -22,7 +22,7 @@ check_stack_status() {
 }
 
 # Inform the user of the stack creation process
-echo "User $AWS_USER is creating stack $STACK_NAME in region $AWS_REGION..."
+echo "$(date +%H:%M:%s) -- User $AWS_USER is creating stack $STACK_NAME in region $AWS_REGION..."
 
 # Create CloudFormation stack
 aws cloudformation create-stack \
@@ -30,32 +30,32 @@ aws cloudformation create-stack \
     --template-body file://stack.yaml \
     --capabilities CAPABILITY_IAM \
     --parameters ParameterKey=BucketName,ParameterValue="$BUCKET_NAME" \
-    --region "$AWS_REGION"
+    --region "$AWS_REGION" > /dev/null
 
 # Loop to monitor the stack creation status every 30 seconds
 while true; do
   STATUS=$(check_stack_status)
-  echo "Current status: $STATUS"
+  echo "$(date +%H:%M:%s) -- Current status: $STATUS"
   
   if [[ "$STATUS" == "CREATE_COMPLETE" || "$STATUS" == "UPDATE_COMPLETE" ]]; then
-    echo "Stack creation/update is complete."
+    echo "$(date +%H:%M:%s) -- Stack creation/update is complete."
     break
   elif [[ "$STATUS" == *"FAILED"* || "$STATUS" == "ROLLBACK_COMPLETE" || "$STATUS" == "DELETE_FAILED" ]]; then
-    echo "Error: Stack creation/update failed with status $STATUS."
+    echo "$(date +%H:%M:%s) -- Error: Stack creation/update failed with status $STATUS."
     exit 1
   fi
 
-  sleep 30
+  sleep 10
 done
 
-echo "Resources were successfully deployed."
+echo "$(date +%H:%M:%s) -- Resources were successfully deployed."
 
-echo "Uploading index.html to the S3 bucket..."
+echo "$(date +%H:%M:%s) -- Uploading index.html to the S3 bucket..."
 aws s3api put-object \
     --bucket "$BUCKET_NAME" \
     --key index.html \
     --body index.html \
     --content-type "text/html" \
-    --region "$AWS_REGION"
+    --region "$AWS_REGION" > /dev/null
 
-echo "All good! You can start with your task now."
+echo "$(date +%H:%M:%s) -- All good! You can start with your task now."

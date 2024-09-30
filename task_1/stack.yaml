@@ -12,9 +12,9 @@ Resources:
       BucketName: !Ref BucketName
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
-        BlockPublicPolicy: true
+        BlockPublicPolicy: false
         IgnorePublicAcls: true
-        RestrictPublicBuckets: false
+        RestrictPublicBuckets: true
       VersioningConfiguration: 
         Status: Enabled
       WebsiteConfiguration: 
@@ -62,7 +62,7 @@ Resources:
   TestLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'UpdateS3BucketFunction-${AWS::StackName}-${AWS::Region}'
+      FunctionName: !Sub 'update-s3-${AWS::StackName}-${AWS::Region}'
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: python3.12
