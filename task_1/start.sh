@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set region, user, and postfix variables
-AWS_REGION=$(aws configure get region || echo "us-east-1")
+AWS_REGION=$(echo $AWS_DEFAULT_REGION || echo "us-east-1")
 AWS_USER=$(aws sts get-caller-identity | jq -r ".Arn")
 POSTFIX=$(date +%Y%m%d-%Hh-%s)
 
