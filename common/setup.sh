@@ -12,14 +12,12 @@ get_current_aws_region () {
         read -p "Please enter the correct AWS region: " new_region
         current_region="$new_region"
     fi
-
-    echo "Using AWS region: $current_region"
     
-    echo $current_region
+    export $AWS_REGION="$current_region"
 }
 
 get_postfix () {
-    echo $(date +%Y%m%d-%Hh-%s)
+    exprot $POSTFIX=$(date +%Y%m%d-%Hh-%s)
 }
 
 check_and_set_variable () {

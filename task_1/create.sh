@@ -8,9 +8,9 @@ source "$SCRIPT_DIR/common/cf.sh"
 source "$SCRIPT_DIR/common/s3.sh"
 source "$SCRIPT_DIR/common/sts.sh"
 
-AWS_REGION=$(get_current_aws_region)
-AWS_USER=$(get_current_user)
-POSTFIX=$(get_postfix)
+get_current_aws_region
+get_current_user
+get_postfix
 
 STACK_NAME="task-1-${POSTFIX}"
 BUCKET_NAME="task-1-${AWS_REGION}-${POSTFIX}"
