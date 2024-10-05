@@ -1,11 +1,16 @@
 #!/bin/bash
+set -e
+
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+
+
 
 # Load variables
-source vars
+source "$SCRIPT_DIR/vars"
 
-source ../common/setup.sh
-source ../common/cf.sh
-source ../common/s3.sh
+source "$SCRIPT_DIR/common/setup.sh"
+source "$SCRIPT_DIR/common/cf.sh"
+source "$SCRIPT_DIR/common/s3.sh"
 
 
 check_and_set_variable "$STACK_NAME"

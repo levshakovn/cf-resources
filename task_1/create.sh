@@ -1,8 +1,11 @@
 #!/bin/bash
+set -e
 
-source ../common/setup.sh
-source ../common/cf.sh
-source ../common/s3.sh
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+
+source "$SCRIPT_DIR/common/setup.sh"
+source "$SCRIPT_DIR/common/cf.sh"
+source "$SCRIPT_DIR/common/s3.sh"
 
 AWS_REGION=$(get_current_aws_region)
 AWS_USER=$(get_current_user)
