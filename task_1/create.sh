@@ -15,7 +15,7 @@ POSTFIX=$(get_postfix)
 STACK_NAME="task-1-${POSTFIX}"
 BUCKET_NAME="task-1-${AWS_REGION}-${POSTFIX}"
 STACK_PARAMS="ParameterKey=BucketName,ParameterValue=$BUCKET_NAME"
-FILE_NAME="index.html"
+FILE_NAME="$SCRIPT_DIR/index.html"
 
 # Save variables to a file for later use
 cat <<EOL > vars
