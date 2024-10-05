@@ -12,7 +12,7 @@ create_stack () {
     # Create CloudFormation stack
     aws cloudformation create-stack \
         --stack-name "$STACK_NAME" \
-        --template-body file://stack.yaml \
+        --template-body "file://$SCRIPT_DIR/stack.yaml" \
         --capabilities CAPABILITY_IAM \
         --parameters $_STASK_PARAMS \
         --region "$AWS_REGION" > /dev/null

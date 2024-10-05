@@ -5,7 +5,7 @@ get_current_aws_region () {
         current_region="us-east-1"
     fi
 
-    read -p "Is $current_region this the correct AWS region? (y/n): " confirm
+    read -p "Is $current_region the correct AWS region? (y/n): " confirm
 
     # If not correct, prompt for a new region
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
