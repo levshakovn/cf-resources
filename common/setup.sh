@@ -13,7 +13,7 @@ get_current_aws_region () {
         current_region="$new_region"
     fi
     
-    export $AWS_REGION="$current_region"
+    export AWS_REGION="$current_region"
 }
 
 get_postfix () {
