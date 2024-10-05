@@ -19,7 +19,7 @@ FILE_NAME="index.html"
 
 # Save variables to a file for later use
 cat <<EOL > vars
-STACK_NAME=$STACK_NAME
+STACK_NAME="$SCRIPT_DIR/$STACK_NAME"
 BUCKET_NAME=$BUCKET_NAME
 AWS_REGION=$AWS_REGION
 EOL
