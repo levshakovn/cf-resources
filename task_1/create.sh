@@ -14,7 +14,6 @@ get_postfix
 
 STACK_NAME="task-1-${POSTFIX}"
 BUCKET_NAME="task-1-${AWS_REGION}-${POSTFIX}"
-STACK_PARAMS="ParameterKey=BucketName,ParameterValue=$BUCKET_NAME"
 FILE_NAME="$SCRIPT_DIR/index.html"
 
 # Save variables to a file for later use
@@ -25,14 +24,14 @@ AWS_REGION=$AWS_REGION
 EOL
 
 
-echo "$(date +%H:%M:%s) -- User $AWS_USER is creating stack $STACK_NAME in region $AWS_REGION with parameters $STACK_PARAMS..."
+echo "$(date +%H:%M:%s) -- User $AWS_USER is creating stack $STACK_NAME in region $AWS_REGION..."
 
 # Create CloudFormation stack
 aws cloudformation create-stack \
     --stack-name "$STACK_NAME" \
     --template-body "file://$SCRIPT_DIR/task_1/stack.yaml" \
     --capabilities CAPABILITY_IAM \
-    --parameters $STASK_PARAMS \
+    --parameters "ParameterKey=BucketName,ParameterValue=$BUCKET_NAME" \
     --region "$AWS_REGION" > /dev/null
 
 monitor_stack_status
