@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  S3Bucket1:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'source-bucket-${AWS::StackName}'
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt CopyLambdaFunction.Arn
+
+  S3Bucket2:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'destination-bucket-${AWS::StackName}'
+
+  CopyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaS3Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: 
+                  - !Sub 'arn:aws:s3:::${S3Bucket1}/*'
+                  - !Sub 'arn:aws:s3:::${S3Bucket2}/*'
+
+  CopyLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'copy-file-lambda-${AWS::StackName}'
+      Handler: index.handler
+      Role: !GetAtt CopyLambdaRole.Arn
+      Runtime: python3.9
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          
+          s3 = boto3.client('s3')
+
+          def handler(event, context):
+              source_bucket = event['Records'][0]['s3']['bucket']['name']
+              source_key = event['Records'][0]['s3']['object']['key']
+              destination_bucket = '${S3Bucket2}'
+              new_key = 'copied-' + source_key
+
+              # Copy the object to the destination bucket with a new name
+              copy_source = {'Bucket': source_bucket, 'Key': source_key}
+              s3.copy_object(CopySource=copy_source, Bucket=destination_bucket, Key=new_key)
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps('File copied successfully!')
+              }
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt CopyLambdaFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub 'arn:aws:s3:::${S3Bucket1}'
+
+Outputs:
+  S3Bucket1Name:
+    Description: "Source S3 Bucket Name"
+    Value: !Ref S3Bucket1
+
+  S3Bucket2Name:
+    Description: "Destination S3 Bucket Name"
+    Value: !Ref S3Bucket2
+
+  LambdaFunctionName:
+    Description: "Lambda Function Name"
+    Value: !Ref CopyLambdaFunction

@@ -8,12 +8,13 @@ if [ "$#" -ne 2 ]; then
 fi
 
 # Assign the arguments to variables
-arg1="$1"
-arg2="$2"
+TASK_NUMBER="$1"
+ACTION="$2"
 
 # Run different scripts based on the arguments
-echo "Running $arg2 script for task number $arg1"
+echo "Running $ACTION script for task number $TASK_NUMBER"
 
-chmod +x "./task_${arg1}/${arg2}.sh"
-"./task_${arg1}/${arg2}.sh"
+chmod +x "./task_${TASK_NUMBER}/${ACTION}.sh"
+
+"./task_${TASK_NUMBER}/${ACTION}.sh"
 
