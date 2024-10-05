@@ -74,11 +74,11 @@ Resources:
         ZipFile: |
           import json
           import boto3
-
-          s3 = boto3.client('s3')
+          import os
 
           def handler(event, context):
-              bucket_name = $BUCKET_NAME
+              s3 = boto3.client('s3')
+              bucket_name = os.getenv("BUCKET_NAME")
               object_key = 'index.html'
               new_content = "<html><body><h1>Modified by Lambda!</h1></body></html>"
               
