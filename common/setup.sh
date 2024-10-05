@@ -17,7 +17,7 @@ get_current_aws_region () {
 }
 
 get_postfix () {
-    export POSTFIX=$(date +%Y%m%d-%Hh-%s)
+    export POSTFIX=$(date +%Y%m%d-%s)
 }
 
 check_and_set_variable () {

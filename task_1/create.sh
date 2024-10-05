@@ -25,7 +25,7 @@ AWS_REGION=$AWS_REGION
 EOL
 
 
-echo "$(date +%H:%M:%s) -- User $AWS_USER is creating stack $STACK_NAME in region $AWS_REGION..."
+echo "$(date +%H:%M:%s) -- User $AWS_USER is creating stack $STACK_NAME in region $AWS_REGION with parameters $STACK_PARAMS..."
 
 # Create CloudFormation stack
 aws cloudformation create-stack \
