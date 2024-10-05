@@ -17,14 +17,14 @@ BUCKET_NAME="task-1-${AWS_REGION}-${POSTFIX}"
 FILE_NAME="$SCRIPT_DIR/index.html"
 
 # Save variables to a file for later use
-cat <<EOL > "$SCRIPT_DIR/vars"
+cat <<EOL > "$SCRIPT_DIR/task_1/vars"
 STACK_NAME="$STACK_NAME"
 BUCKET_NAME=$BUCKET_NAME
 AWS_REGION=$AWS_REGION
 EOL
 
 
-echo "$(date +%H:%M:%s) -- User $AWS_USER is creating stack $STACK_NAME in region $AWS_REGION..."
+echo "$(date +%H:%M:%S) -- User $AWS_USER is creating stack $STACK_NAME in region $AWS_REGION..."
 
 # Create CloudFormation stack
 aws cloudformation create-stack \
@@ -36,6 +36,6 @@ aws cloudformation create-stack \
 
 monitor_stack_status
 
-upload_file_to_bucket $BUCKET_NAME $FILE_NAME
+upload_file_to_bucket $BUCKET_NAME $FILE_NAME 1
 
-echo "$(date +%H:%M:%s) -- All good! You can start with your task now."
+echo "$(date +%H:%M:%S) -- All good! You can start with your task now."
