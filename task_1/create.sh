@@ -18,7 +18,7 @@ STACK_PARAMS="ParameterKey=BucketName,ParameterValue=$BUCKET_NAME"
 FILE_NAME="$SCRIPT_DIR/index.html"
 
 # Save variables to a file for later use
-cat <<EOL > vars
+cat <<EOL > "$SCRIPT_DIR/vars"
 STACK_NAME="$SCRIPT_DIR/$STACK_NAME"
 BUCKET_NAME=$BUCKET_NAME
 AWS_REGION=$AWS_REGION
