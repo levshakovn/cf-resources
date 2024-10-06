@@ -26,7 +26,7 @@ clear_bucket () {
         echo "$(date +%H:%M:%S) -- Bucket $_BUCKET_NAME is already deleted."
     
     # Check if bucket is empty
-    elif [ "$_BUCKET_OBJECTS" -eq 1 ]; then
+    elif [ "$_BUCKET_OBJECTS" ]; then
         _OBJECT_VERSIONS=$(aws s3api list-object-versions --bucket "$_BUCKET_NAME" | jq -r '{Objects: [.Versions[] | {Key, VersionId}], Quiet: false}')
         echo "$(date +%H:%M:%S) -- Emptying the bucket $_BUCKET_NAME..."
         

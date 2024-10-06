@@ -1,20 +1,67 @@
 AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  BucketNameSrc:
+    Type: String
+  BucketNameDest:
+    Type: String
+
 Resources:
-  S3Bucket1:
+  Task2S3Bucket1:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'source-bucket-${AWS::StackName}'
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: s3:ObjectCreated:*
-            Function: !GetAtt CopyLambdaFunction.Arn
+      BucketName: !Ref BucketNameSrc
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
 
-  S3Bucket2:
+  Task2BucketPolicy1:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Task2S3Bucket1
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: Deny
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref Task2S3Bucket1
+                - /*
+            Principal: '*'
+
+  Task2S3Bucket2:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'destination-bucket-${AWS::StackName}'
+      BucketName: !Ref BucketNameDest
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
 
-  CopyLambdaRole:
+  Task2BucketPolicy2:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Task2S3Bucket2
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - 's3:PutObject'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              - - 'arn:aws:s3:::'
+                - !Ref Task2S3Bucket2
+                - /*
+            Principal: '*'
+
+  Task2CopyLambdaRole:
     Type: AWS::IAM::Role
     Properties: 
       AssumeRolePolicyDocument:
@@ -34,27 +81,35 @@ Resources:
                   - s3:GetObject
                   - s3:PutObject
                 Resource: 
-                  - !Sub 'arn:aws:s3:::${S3Bucket1}/*'
-                  - !Sub 'arn:aws:s3:::${S3Bucket2}/*'
+                  - !Sub 'arn:aws:s3:::${Task2S3Bucket1}/*'
+                  - !Sub 'arn:aws:s3:::${Task2S3Bucket2}/*'
 
-  CopyLambdaFunction:
+  Task2CopyLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'copy-file-lambda-${AWS::StackName}'
+      FunctionName: !Sub 'copy-file-lambda-${AWS::StackName}-${AWS::Region}'
       Handler: index.handler
-      Role: !GetAtt CopyLambdaRole.Arn
-      Runtime: python3.9
+      Role: !GetAtt Task2CopyLambdaRole.Arn
+      Runtime: python3.12
+      Environment:
+        Variables:
+          SRC_BUCKET_NAME: !Ref Task2S3Bucket1
+          DEST_BUCKET_NAME: !Ref Task2S3Bucket2
+          FILE_NAME: "wrong-index.txt"
       Code:
         ZipFile: |
           import json
           import boto3
-          
+          import os
+          import time
+
           s3 = boto3.client('s3')
 
           def handler(event, context):
-              source_bucket = event['Records'][0]['s3']['bucket']['name']
-              source_key = event['Records'][0]['s3']['object']['key']
-              destination_bucket = '${S3Bucket2}'
+              time.sleep(4)
+              source_bucket = os.getenv("SRC_BUCKET_NAME")
+              source_key = os.getenv("FILE_NAME")
+              destination_bucket = os.getenv("DEST_BUCKET_NAME")
               new_key = 'copied-' + source_key
 
               # Copy the object to the destination bucket with a new name
@@ -66,23 +121,31 @@ Resources:
                   'body': json.dumps('File copied successfully!')
               }
 
-  LambdaInvokePermission:
+  S3PutObjectPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !GetAtt CopyLambdaFunction.Arn
       Action: lambda:InvokeFunction
+      FunctionName: !GetAtt Task2CopyLambdaFunction.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !Sub 'arn:aws:s3:::${S3Bucket1}'
+      SourceArn: !GetAtt Task2S3Bucket2.Arn
+
+  S3GetObjectPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt Task2CopyLambdaFunction.Arn
+      Principal: s3.amazonaws.com
+      SourceArn: !GetAtt Task2S3Bucket1.Arn
 
 Outputs:
   S3Bucket1Name:
     Description: "Source S3 Bucket Name"
-    Value: !Ref S3Bucket1
+    Value: !Ref Task2S3Bucket1
 
   S3Bucket2Name:
     Description: "Destination S3 Bucket Name"
-    Value: !Ref S3Bucket2
+    Value: !Ref Task2S3Bucket2
 
   LambdaFunctionName:
     Description: "Lambda Function Name"
-    Value: !Ref CopyLambdaFunction
+    Value: !Ref Task2CopyLambdaFunction
