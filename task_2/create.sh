@@ -36,7 +36,7 @@ aws cloudformation create-stack \
     --stack-name "$STACK_NAME" \
     --template-body "file://$SCRIPT_DIR/task_$TASK_NUM/stack.yaml" \
     --capabilities CAPABILITY_IAM \
-    --parameters "ParameterKey=BucketNameSrc,ParameterValue=$SRC_BUCKET_NAME "ParameterKey=BucketNameDest,ParameterValue=$DEST_BUCKET_NAME"" \
+    --parameters "ParameterKey=BucketNameSrc,ParameterValue=$SRC_BUCKET_NAME" "ParameterKey=BucketNameDest,ParameterValue=$DEST_BUCKET_NAME" \
     --region "$AWS_REGION" > /dev/null
 
 monitor_stack_status
