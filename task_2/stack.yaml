@@ -7,7 +7,7 @@ Parameters:
     Type: String
 
 Resources:
-  Task2S3Bucket1:
+  BucketSrc:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref BucketNameSrc
@@ -17,10 +17,10 @@ Resources:
         IgnorePublicAcls: false
         RestrictPublicBuckets: false
 
-  Task2BucketPolicy1:
+  BucketPolicySrc:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref Task2S3Bucket1
+      Bucket: !Ref BucketSrc
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -30,11 +30,11 @@ Resources:
             Resource: !Join
               - ''
               - - 'arn:aws:s3:::'
-                - !Ref Task2S3Bucket1
+                - !Ref BucketSrc
                 - /*
             Principal: '*'
 
-  Task2S3Bucket2:
+  BucketDest:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref BucketNameDest
@@ -44,10 +44,10 @@ Resources:
         IgnorePublicAcls: false
         RestrictPublicBuckets: false
 
-  Task2BucketPolicy2:
+  BucketPolicyDest:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref Task2S3Bucket2
+      Bucket: !Ref BucketDest
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -57,11 +57,11 @@ Resources:
             Resource: !Join
               - ''
               - - 'arn:aws:s3:::'
-                - !Ref Task2S3Bucket2
+                - !Ref BucketDest
                 - /*
             Principal: '*'
 
-  Task2CopyLambdaRole:
+  LambdaRole:
     Type: AWS::IAM::Role
     Properties: 
       AssumeRolePolicyDocument:
@@ -80,30 +80,30 @@ Resources:
                 Action:
                   - s3:GetObject
                 Resource: 
-                  - !Sub 'arn:aws:s3:::${Task2S3Bucket1}/*'
+                  - !Sub 'arn:aws:s3:::${BucketSrc}/*'
               - Effect: Allow
                 Action:
                   - s3:ListBucket
                 Resource: 
-                  - !Sub 'arn:aws:s3:::${Task2S3Bucket1}'
+                  - !Sub 'arn:aws:s3:::${BucketSrc}'
               - Effect: Allow
                 Action:
                   - s3:PutObject
                 Resource: 
-                  - !Sub 'arn:aws:s3:::${Task2S3Bucket2}/*'
+                  - !Sub 'arn:aws:s3:::${BucketDest}/*'
 
 
-  Task2CopyLambdaFunction:
+  LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'copy-file-lambda-${AWS::StackName}-${AWS::Region}'
       Handler: index.handler
-      Role: !GetAtt Task2CopyLambdaRole.Arn
+      Role: !GetAtt LambdaRole.Arn
       Runtime: python3.12
       Environment:
         Variables:
-          SRC_BUCKET_NAME: !Ref Task2S3Bucket1
-          DEST_BUCKET_NAME: !Ref Task2S3Bucket2
+          SRC_BUCKET_NAME: !Ref BucketSrc
+          DEST_BUCKET_NAME: !Ref BucketDest
           FILE_NAME: "wrong-index.txt"
       Code:
         ZipFile: |
@@ -134,27 +134,27 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt Task2CopyLambdaFunction.Arn
+      FunctionName: !GetAtt LambdaFunction.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !GetAtt Task2S3Bucket2.Arn
+      SourceArn: !GetAtt BucketDest.Arn
 
   S3GetObjectPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt Task2CopyLambdaFunction.Arn
+      FunctionName: !GetAtt LambdaFunction.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !GetAtt Task2S3Bucket1.Arn
+      SourceArn: !GetAtt BucketSrc.Arn
 
 Outputs:
-  S3Bucket1Name:
+  BucketSrcName:
     Description: "Source S3 Bucket Name"
-    Value: !Ref Task2S3Bucket1
+    Value: !Ref BucketSrc
 
-  S3Bucket2Name:
+  BucketDestName:
     Description: "Destination S3 Bucket Name"
-    Value: !Ref Task2S3Bucket2
+    Value: !Ref BucketDest
 
   LambdaFunctionName:
     Description: "Lambda Function Name"
-    Value: !Ref Task2CopyLambdaFunction
+    Value: !Ref LambdaFunction

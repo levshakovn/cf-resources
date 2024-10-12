@@ -6,7 +6,7 @@ Parameters:
     Type: String
 
 Resources:
-  Task1Bucket:
+  Bucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref BucketName
@@ -20,10 +20,10 @@ Resources:
       WebsiteConfiguration: 
         IndexDocument: index.html
 
-  Task1BucketPolicy:
+  BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref Task1Bucket
+      Bucket: !Ref Bucket
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -33,12 +33,12 @@ Resources:
             Resource: !Join
               - ''
               - - 'arn:aws:s3:::'
-                - !Ref Task1Bucket
+                - !Ref Bucket
                 - /*
             Principal: '*'
 
 
-  Task1LambdaExecutionRole:
+  LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties: 
       AssumeRolePolicyDocument:
@@ -57,19 +57,19 @@ Resources:
                 Action:
                   - s3:GetObject
                 Resource: 
-                  - !Sub 'arn:aws:s3:::${Task1Bucket}/*'
+                  - !Sub 'arn:aws:s3:::${Bucket}/*'
 
-  Task1LambdaFunction:
+  LambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'update-s3-${AWS::StackName}-${AWS::Region}'
+      FunctionName: !Sub 'task-1-update-s3-${AWS::StackName}-${AWS::Region}'
       Handler: index.handler
-      Role: !GetAtt Task1LambdaExecutionRole.Arn
+      Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: python3.12
       Timeout: 5
       Environment:
         Variables:
-          BUCKET_NAME: !Ref Task1Bucket
+          BUCKET_NAME: !Ref Bucket
       Code:
         ZipFile: |
           import json
@@ -94,15 +94,15 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt Task1LambdaFunction.Arn
+      FunctionName: !GetAtt LambdaFunction.Arn
       Principal: s3.amazonaws.com
-      SourceArn: !GetAtt Task1Bucket.Arn
+      SourceArn: !GetAtt Bucket.Arn
 
 Outputs:
   BucketName:
     Description: The name of the S3 bucket
-    Value: !Ref Task1Bucket
+    Value: !Ref Bucket
 
   LambdaFunctionName:
     Description: The name of the Lambda function
-    Value: !Ref Task1LambdaFunction
+    Value: !Ref LambdaFunction
